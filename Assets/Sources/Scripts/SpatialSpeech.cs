@@ -7,37 +7,28 @@ using UnityEngine;
 using UnityWebGLSpeechDetection;
 
 public class SpatialSpeech : MonoBehaviour {
-
-    /// <summary>
-    /// Reference to the text that displays detected words
-    /// </summary>
+    
+    // Reference to the text that displays detected words
     public Text _mTextDictation = null;
-
-    /// <summary>
-    /// Dropdown selector for languages
-    /// </summary>
+    
+    // Reference to the text that displays detected words
+    public Text _mTextKeyword = null;
+    
+    // Dropdown selector for languages
     public Dropdown _mDropDownLanguages = null;
-
-    /// <summary>
-    /// Dropdown selector for dialects
-    /// </summary>
+    
+    // Dropdown selector for dialects
     public Dropdown _mDropDownDialects = null;
-
-    /// <summary>
-    /// Reference to the supported languages and dialects
-    /// </summary>
+    
+    // Reference to the supported languages and dialects
     private LanguageResult _mLanguageResult = null;
-
-
-    /// <summary>
-    /// List of detected words
-    /// </summary>
+    
+    // List of detected words
     private List<string> _mWords = new List<string>();
-
-    /// <summary>
-    /// String builder to format the dictation text
-    /// </summary>
+    
+    // String builder to format the dictation text
     private StringBuilder _mStringBuilder = new StringBuilder();
+
 
     private ISpeechDetectionPlugin _mSpeechDetectionPlugin = null;
 
@@ -141,19 +132,17 @@ public class SpatialSpeech : MonoBehaviour {
                 }
                 if (result.isFinal)
                 {
-                    _mWords.Add(string.Format("[FINAL] \"{0}\" Confidence={1}",
-                        alternative.transcript,
-                        alternative.confidence));
+                    _mWords.Add(string.Format("\"{0}\"", alternative.transcript));
                 }
                 else
                 {
-                    _mWords.Add(string.Format("\"{0}\" Confidence={1}",
-                        alternative.transcript,
-                        alternative.confidence));
+                    string finalSentence = string.Format("\"{0}\"", alternative.transcript);
+                    _mWords.Add(finalSentence);
+                    _mTextKeyword.text = DetectKeyword(finalSentence);
                 }
             }
         }
-        while (_mWords.Count > 15)
+        while (_mWords.Count > 3)
         {
             _mWords.RemoveAt(0);
         }
@@ -171,5 +160,12 @@ public class SpatialSpeech : MonoBehaviour {
             _mTextDictation.text = _mStringBuilder.ToString();
         }
         return false;
+    }
+
+    string DetectKeyword(string sentence)
+    {
+        string[] words = sentence.Split(' ');
+        
+        return words[Random.Range(0, words.Length)];
     }
 }
