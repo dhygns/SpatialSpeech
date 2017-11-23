@@ -133,6 +133,15 @@ public class SpatialSpeech : MonoBehaviour {
                 if (result.isFinal)
                 {
                     _mWords.Add(string.Format("\"{0}\"", alternative.transcript));
+
+                    _mTextKeyword.text = "";
+                    SpatialMorphologicalAnalyzer.RequestMorpho(alternative.transcript, (Morpho.LexemeList list) =>
+                    {
+                        foreach (Morpho.Lexeme lexeme in list.lexeme)
+                        {
+                            _mTextKeyword.text += lexeme.senselist.sense.baseform + " : " + lexeme.senselist.sense.partofspeech.text + "\n";
+                        }
+                    });
                 }
                 else
                 {
