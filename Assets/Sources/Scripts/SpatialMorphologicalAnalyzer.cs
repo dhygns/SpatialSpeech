@@ -61,13 +61,6 @@ namespace Morpho
 public class SpatialMorphologicalAnalyzer : MonoBehaviour
 {
     static private SpatialMorphologicalAnalyzer _instance = null;
-    static public SpatialMorphologicalAnalyzer Instance
-    {
-        get
-        {
-            return _instance == null ? (_instance = new SpatialMorphologicalAnalyzer()) : _instance;
-        }
-    }
 
     public delegate void Listener(Morpho.LexemeList lexemes);
     private Listener _callback = null;
@@ -77,7 +70,7 @@ public class SpatialMorphologicalAnalyzer : MonoBehaviour
     //singleton instance
     private void Awake()
     {
-        _instance = this;
+        if(_instance == null) _instance = this;
     }
 
     // Use this for initialization
@@ -114,7 +107,7 @@ public class SpatialMorphologicalAnalyzer : MonoBehaviour
         return JsonUtility.FromJson<Morpho.LexemeList>(jtxt);
     }
 
-    IEnumerator requestToServer(string sentence, string language)
+    IEnumerator _requestToServer(string sentence, string language)
     {
 
         string url = "https://services.open.xerox.com/bus/op/fst-nlp-tools/PartOfSpeechTagging";//?inputtext=" + sentence + "&language=" + languge;
@@ -151,7 +144,8 @@ public class SpatialMorphologicalAnalyzer : MonoBehaviour
 
     void requestToServer(string sentence)
     {
-        StartCoroutine(requestToServer(sentence, _language));
+        Debug.Log(sentence + " // " + _language + " // " + this);
+        StartCoroutine(_requestToServer(sentence, _language));
     }
 
 
@@ -163,7 +157,7 @@ public class SpatialMorphologicalAnalyzer : MonoBehaviour
     /// <param name="language"> language </param>
     static public void SetLanguage(string language)
     {
-        Instance.setLanguage(language);
+        _instance.setLanguage(language);
     }
 
     /// <summary>
@@ -173,8 +167,8 @@ public class SpatialMorphologicalAnalyzer : MonoBehaviour
     /// <param name="cb"> callback function </param>
     static public void RequestMorpho(string sentence, Listener cb)
     {
-        Instance.setListener(cb);
-        Instance.requestToServer(sentence);
+        _instance.setListener(cb);
+        _instance.requestToServer(sentence);
     }
 
 }

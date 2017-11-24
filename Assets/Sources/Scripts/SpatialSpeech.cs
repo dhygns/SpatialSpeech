@@ -60,8 +60,33 @@ public class SpatialSpeech : MonoBehaviour {
 
     // Update is called once per frame
     void Update () {
-		
+        string sentence = "";
+        if(Input.anyKeyDown)
+        {
+            switch(Input.inputString)
+            {
+                case "1": sentence = "I think Disney will require McDonald's in 2018."; break;
+                case "2": sentence = "Create an object from its JSON representation."; break;
+                case "3": sentence = "therefore the type you are creating must be supported by the serializer."; break;
+                case "4": sentence = "how to reply when someone mentions the president at Thanksgiving."; break;
+                default: return;
+            }
+            _mTextKeyword.text = "Processing...";
+            _mTextDictation.text = sentence;
+            SpatialMorphologicalAnalyzer.RequestMorpho(sentence, HandleGetLexeme);
+        }
 	}
+    void HandleGetLexeme(Morpho.LexemeList list)
+    {
+        _mTextKeyword.text = "";
+        foreach (Morpho.Lexeme lexeme in list.lexeme)
+        {
+            string word = lexeme.senselist.sense.baseform;
+            string type = lexeme.senselist.sense.partofspeech.text;
+
+            if (type == "+PROP") _mTextKeyword.text += word + "\n";
+        }
+    }
 
     void HandleGetLanguages(LanguageResult languageResult)
     {
@@ -134,14 +159,8 @@ public class SpatialSpeech : MonoBehaviour {
                 {
                     _mWords.Add(string.Format("\"{0}\"", alternative.transcript));
 
-                    _mTextKeyword.text = "";
-                    SpatialMorphologicalAnalyzer.RequestMorpho(alternative.transcript, (Morpho.LexemeList list) =>
-                    {
-                        foreach (Morpho.Lexeme lexeme in list.lexeme)
-                        {
-                            _mTextKeyword.text += lexeme.senselist.sense.baseform + " : " + lexeme.senselist.sense.partofspeech.text + "\n";
-                        }
-                    });
+                    _mTextKeyword.text = "Processing...";
+                    SpatialMorphologicalAnalyzer.RequestMorpho(alternative.transcript, HandleGetLexeme);
                 }
                 else
                 {
