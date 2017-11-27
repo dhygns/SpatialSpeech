@@ -70,20 +70,23 @@ public class SpatialMorphologicalAnalyzer : MonoBehaviour
     //singleton instance
     private void Awake()
     {
-        if(_instance == null) _instance = this;
+        if (_instance == null) _instance = this;
     }
+
+    public Renderer forTest;
+    
 
     // Use this for initialization
     void Start()
     {
-         //   SpatialMorphologicalAnalyzer.RequestMorpho("hello, nice to meet you", (Morpho.LexemeList list) =>
-         //{
-         //    foreach (Morpho.Lexeme lexeme in list.lexeme)
-         //    {
-         //        Debug.Log(lexeme.senselist.sense.baseform + " : " + lexeme.senselist.sense.partofspeech.text);
-         //    }
-         //});
-         //   //StartCoroutine(_requestToServer("I think Disney will require McDonald's in 2018."));
+        //   SpatialMorphologicalAnalyzer.RequestMorpho("hello, nice to meet you", (Morpho.LexemeList list) =>
+        //{
+        //    foreach (Morpho.Lexeme lexeme in list.lexeme)
+        //    {
+        //        Debug.Log(lexeme.senselist.sense.baseform + " : " + lexeme.senselist.sense.partofspeech.text);
+        //    }
+        //});
+        //   //StartCoroutine(_requestToServer("I think Disney will require McDonald's in 2018."));
     }
 
     // Update is called once per frame
