@@ -87,6 +87,7 @@ public class SpatialSpeech : MonoBehaviour {
 
             _mTextKeyword[i].text = word;
             _mImageKeyword[i].texture = tex;
+            _mImageKeyword[i].rectTransform.sizeDelta = _mKeywordsTex.ContainsKey(word) ? new Vector2(65.0f * tex.width / tex.height, 65.0f) : Vector2.one * 65.0f;
         }
     }
     void HandleGetLexeme(Morpho.LexemeList list)

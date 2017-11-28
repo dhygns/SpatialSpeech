@@ -9,13 +9,14 @@ public class SpatialImageSearch : MonoBehaviour {
     public delegate void Listener(Texture texture);
 
     Dictionary<string, string> headers = new Dictionary<string, string>();
-
+    
 
     private void Awake()
     {
         if(_instance == null) _instance = this;
 
 #if UNITY_WEBGL
+        /* It doesn't work. */
         headers.Add("Access-Control-Allow-Credentials", "true");
         headers.Add("Access-Control-Allow-Headers", "Accept, X-Access-Token, X-Application-Name, X-Request-Sent-Time");
         headers.Add("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -65,8 +66,24 @@ public class SpatialImageSearch : MonoBehaviour {
 
             yield return img;
 
-            if(cb != null) cb(img.texture);
+            if (cb != null) cb(img.texture);
         }
+        //const string privatekey = "bd7c479fcd804647a71c8a9a4b79ba5a";
+        //Debug.Log(privatekey.Length);
+        //WWWForm form = new WWWForm();
+        //form.headers.Add("Ocp-Apim-Subscription-Key", privatekey);
+        ////form.headers.Add("Accept", "application/json");
+        //form.AddField("", "");
+        ////form.AddField("q", word);
+        ////form.AddField("count", "1");
+        ////form.AddField("offset", "0");
+        ////form.AddField("mkt", "en-us");
+        ////form.AddField("safeSearch", "Moderate");
+        //string url = "https://api.cognitive.microsoft.com/bing/v7.0/images?q=" + word;
+        //WWW www = new WWW(url, form);
+        //yield return www;
+        //Debug.LogWarning(www.error);
+        //Debug.Log(www.text);
     }
 
     private void requestSearch(string word, Listener cb)
