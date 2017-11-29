@@ -122,11 +122,11 @@ public class SpatialMorphologicalAnalyzer : MonoBehaviour
 
         WWW www = new WWW(url, form);
 
-        yield return www;
-
+        while(!www.isDone) yield return www;
+        
         if (www.error != null)
         {
-            Debug.LogError(www.error);
+            Debug.LogWarning(www.error);
         }
         else
         {
@@ -171,7 +171,7 @@ public class SpatialMorphologicalAnalyzer : MonoBehaviour
     static public void RequestMorpho(string sentence, Listener cb)
     {
         _instance.setListener(cb);
-        _instance.requestToServer(sentence);
+        _instance.requestToServer(sentence + " in this");
     }
 
 }

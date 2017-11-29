@@ -4,6 +4,8 @@ using System.Text;
 using UnityEngine.UI;
 using UnityEngine;
 
+using UnityEngine.Windows.Speech;
+
 using UnityWebGLSpeechDetection;
 
 public class SpatialSpeech : MonoBehaviour {
@@ -33,8 +35,51 @@ public class SpatialSpeech : MonoBehaviour {
     private StringBuilder _mStringBuilder = new StringBuilder();
 
 
-    private ISpeechDetectionPlugin _mSpeechDetectionPlugin = null;
+#if UNITY_EDITOR
 
+    private DictationRecognizer m_DictationRecognizer;
+
+    void Start()
+    {
+        m_DictationRecognizer = new DictationRecognizer();
+
+        m_DictationRecognizer.DictationResult += (text, confidence) =>
+        {
+            
+            Debug.Log("FINAL : " + text);
+            _mWords.Add(string.Format("\"{0}\"", text));
+
+            SpatialMorphologicalAnalyzer.RequestMorpho(text, HandleGetLexeme);
+            reorderingWords();
+        };
+        
+
+        m_DictationRecognizer.DictationHypothesis += (text) =>
+        {
+            string finalSentence = string.Format("\"{0}\"", text);
+            _mWords.Add(finalSentence);
+            reorderingWords();
+        };
+
+        m_DictationRecognizer.DictationComplete += (completionCause) =>
+        {
+            if (completionCause != DictationCompletionCause.Complete)
+            {
+                Debug.LogErrorFormat("Dictation completed unsuccessfully: {0}.", completionCause);
+                m_DictationRecognizer.Start();
+            }
+        };
+
+        m_DictationRecognizer.DictationError += (error, hresult) =>
+        {
+            Debug.LogErrorFormat("Dictation error: {0}; HResult = {1}.", error, hresult);
+        };
+
+        m_DictationRecognizer.Start();
+    }
+
+#elif UNITY_WEBGL
+    private ISpeechDetectionPlugin _mSpeechDetectionPlugin = null;
 
     // Use this for initialization
     IEnumerator Start () {
@@ -61,62 +106,7 @@ public class SpatialSpeech : MonoBehaviour {
         _mSpeechDetectionPlugin.GetLanguages(HandleGetLanguages);
     }
 
-    // Update is called once per frame
-    void Update () {
-        string sentence = "";
-        if(Input.anyKeyDown)
-        {
-            switch(Input.inputString)
-            {
-                case "1": sentence = "I think Disney will require McDonald's in 2018."; break;
-                case "2": sentence = "Create an object from its JSON representation."; break;
-                case "3": sentence = "therefore the type you are creating must be supported by the serializer."; break;
-                case "4": sentence = "how to reply when someone mentions the president at Thanksgiving."; break;
-                case "5": sentence = "Roman empire has been thriving for long time."; break;
-                default: return;
-            }
-            //_mTextKeyword.text = "Processing...";
-            _mTextDictation.text = sentence;
-            SpatialMorphologicalAnalyzer.RequestMorpho(sentence, HandleGetLexeme);
-        }
-
-        for (int i = 0; i < _mKeywords.Count; i++)
-        {
-            string word = _mKeywords.ToArray()[i];
-            Texture tex = _mKeywordsTex.ContainsKey(word) ? _mKeywordsTex[word] : null;
-
-            _mTextKeyword[i].text = word;
-            _mImageKeyword[i].texture = tex;
-            _mImageKeyword[i].rectTransform.sizeDelta = _mKeywordsTex.ContainsKey(word) ? new Vector2(65.0f * tex.width / tex.height, 65.0f) : Vector2.one * 65.0f;
-        }
-    }
-    void HandleGetLexeme(Morpho.LexemeList list)
-    {
-        //_mTextKeyword.text = "";
-        foreach (Morpho.Lexeme lexeme in list.lexeme)
-        {
-            string word = lexeme.senselist.sense.baseform;
-            string type = lexeme.senselist.sense.partofspeech.text;
-
-            if (type == "+PROP")
-            {
-                _mKeywords.Add(word);// + "\n";
-                SpatialImageSearch.RequestSearch(word, (Texture tex) =>
-                {
-                    Debug.Log(tex);
-                    _mKeywordsTex.Add(word, tex);
-                });
-            }
-        }
-
-        while (_mKeywords.Count > 5)
-        {
-            string word = _mKeywords.ToArray()[0];
-            _mKeywords.RemoveAt(0);
-            _mKeywordsTex.Remove(word);
-        }
-
-    }
+   
 
     void HandleGetLanguages(LanguageResult languageResult)
     {
@@ -199,6 +189,74 @@ public class SpatialSpeech : MonoBehaviour {
                 }
             }
         }
+        reorderingWords();
+        return false;
+    }
+
+#endif
+
+    // Update is called once per frame
+    void Update()
+    {
+        string sentence = "";
+        if (Input.anyKeyDown)
+        {
+            switch (Input.inputString)
+            {
+                case "1": sentence = "I think Disney will require McDonald's in 2018."; break;
+                case "2": sentence = "Create an object from its JSON representation."; break;
+                case "3": sentence = "therefore the type you are creating must be supported by the serializer."; break;
+                case "4": sentence = "how to reply when someone mentions the president at Thanksgiving."; break;
+                case "5": sentence = "Roman empire has been thriving for long time."; break;
+                case "6": sentence = "Disney"; break;
+                default: return;
+            }
+            //_mTextKeyword.text = "Processing...";
+            _mTextDictation.text = sentence;
+            SpatialMorphologicalAnalyzer.RequestMorpho(sentence, HandleGetLexeme);
+        }
+
+        for (int i = 0; i < _mKeywords.Count; i++)
+        {
+            string word = _mKeywords.ToArray()[i];
+            Texture tex = _mKeywordsTex.ContainsKey(word) ? _mKeywordsTex[word] : null;
+
+            _mTextKeyword[i].text = word;
+            _mImageKeyword[i].texture = tex;
+            _mImageKeyword[i].rectTransform.sizeDelta = _mKeywordsTex.ContainsKey(word) ? new Vector2(65.0f * tex.width / tex.height, 65.0f) : Vector2.one * 65.0f;
+        }
+    }
+
+    void HandleGetLexeme(Morpho.LexemeList list)
+    {
+        //_mTextKeyword.text = "";
+        foreach (Morpho.Lexeme lexeme in list.lexeme)
+        {
+            string word = lexeme.senselist.sense.baseform;
+            string type = lexeme.senselist.sense.partofspeech.text;
+
+            if (type == "+PROP" || type == "+ADJ")
+            {
+                _mKeywords.Add(word);// + "\n";
+                SpatialImageSearch.RequestSearch(word, (Texture tex) =>
+                {
+                    Debug.Log(tex);
+                    _mKeywordsTex.Add(word, tex);
+                });
+            }
+        }
+
+        while (_mKeywords.Count > 5)
+        {
+            string word = _mKeywords.ToArray()[0];
+            _mKeywords.RemoveAt(0);
+            _mKeywordsTex.Remove(word);
+        }
+
+    }
+
+    void reorderingWords()
+    {
         while (_mWords.Count > 3)
         {
             _mWords.RemoveAt(0);
@@ -216,7 +274,5 @@ public class SpatialSpeech : MonoBehaviour {
             }
             _mTextDictation.text = _mStringBuilder.ToString();
         }
-
-        return false;
     }
 }
