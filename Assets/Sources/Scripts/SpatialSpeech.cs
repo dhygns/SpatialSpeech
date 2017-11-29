@@ -4,9 +4,12 @@ using System.Text;
 using UnityEngine.UI;
 using UnityEngine;
 
-using UnityEngine.Windows.Speech;
 
+#if UNITY_WEBGL && !UNITY_EDITOR
 using UnityWebGLSpeechDetection;
+#else
+using UnityEngine.Windows.Speech;
+#endif
 
 public class SpatialSpeech : MonoBehaviour {
     
@@ -24,7 +27,6 @@ public class SpatialSpeech : MonoBehaviour {
     public Dropdown _mDropDownDialects = null;
     
     // Reference to the supported languages and dialects
-    private LanguageResult _mLanguageResult = null;
     
     // List of detected words
     private List<string> _mWords = new List<string>();
@@ -35,50 +37,10 @@ public class SpatialSpeech : MonoBehaviour {
     private StringBuilder _mStringBuilder = new StringBuilder();
 
 
-#if UNITY_EDITOR
 
-    private DictationRecognizer m_DictationRecognizer;
+#if UNITY_WEBGL && !UNITY_EDITOR
+    private LanguageResult _mLanguageResult = null;
 
-    void Start()
-    {
-        m_DictationRecognizer = new DictationRecognizer();
-
-        m_DictationRecognizer.DictationResult += (text, confidence) =>
-        {
-            
-            Debug.Log("FINAL : " + text);
-            _mWords.Add(string.Format("\"{0}\"", text));
-
-            SpatialMorphologicalAnalyzer.RequestMorpho(text, HandleGetLexeme);
-            reorderingWords();
-        };
-        
-
-        m_DictationRecognizer.DictationHypothesis += (text) =>
-        {
-            string finalSentence = string.Format("\"{0}\"", text);
-            _mWords.Add(finalSentence);
-            reorderingWords();
-        };
-
-        m_DictationRecognizer.DictationComplete += (completionCause) =>
-        {
-            if (completionCause != DictationCompletionCause.Complete)
-            {
-                Debug.LogErrorFormat("Dictation completed unsuccessfully: {0}.", completionCause);
-                m_DictationRecognizer.Start();
-            }
-        };
-
-        m_DictationRecognizer.DictationError += (error, hresult) =>
-        {
-            Debug.LogErrorFormat("Dictation error: {0}; HResult = {1}.", error, hresult);
-        };
-
-        m_DictationRecognizer.Start();
-    }
-
-#elif UNITY_WEBGL
     private ISpeechDetectionPlugin _mSpeechDetectionPlugin = null;
 
     // Use this for initialization
@@ -191,6 +153,47 @@ public class SpatialSpeech : MonoBehaviour {
         }
         reorderingWords();
         return false;
+    }
+#else
+    private DictationRecognizer m_DictationRecognizer;
+
+    void Start()
+    {
+        m_DictationRecognizer = new DictationRecognizer();
+
+        m_DictationRecognizer.DictationResult += (text, confidence) =>
+        {
+
+            Debug.Log("FINAL : " + text);
+            _mWords.Add(string.Format("\"{0}\"", text));
+
+            SpatialMorphologicalAnalyzer.RequestMorpho(text, HandleGetLexeme);
+            reorderingWords();
+        };
+
+
+        m_DictationRecognizer.DictationHypothesis += (text) =>
+        {
+            string finalSentence = string.Format("\"{0}\"", text);
+            _mWords.Add(finalSentence);
+            reorderingWords();
+        };
+
+        m_DictationRecognizer.DictationComplete += (completionCause) =>
+        {
+            if (completionCause != DictationCompletionCause.Complete)
+            {
+                Debug.LogErrorFormat("Dictation completed unsuccessfully: {0}.", completionCause);
+                m_DictationRecognizer.Start();
+            }
+        };
+
+        m_DictationRecognizer.DictationError += (error, hresult) =>
+        {
+            Debug.LogErrorFormat("Dictation error: {0}; HResult = {1}.", error, hresult);
+        };
+
+        m_DictationRecognizer.Start();
     }
 
 #endif

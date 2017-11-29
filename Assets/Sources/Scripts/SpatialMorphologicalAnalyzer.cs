@@ -72,10 +72,7 @@ public class SpatialMorphologicalAnalyzer : MonoBehaviour
     {
         if (_instance == null) _instance = this;
     }
-
-    public Renderer forTest;
     
-
     // Use this for initialization
     void Start()
     {

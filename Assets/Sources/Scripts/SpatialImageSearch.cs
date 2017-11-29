@@ -14,14 +14,7 @@ public class SpatialImageSearch : MonoBehaviour {
     private void Awake()
     {
         if(_instance == null) _instance = this;
-
-#if UNITY_WEBGL
-        /* It doesn't work. */
-        headers.Add("Access-Control-Allow-Credentials", "true");
-        headers.Add("Access-Control-Allow-Headers", "Accept, X-Access-Token, X-Application-Name, X-Request-Sent-Time");
-        headers.Add("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-        headers.Add("Access-Control-Allow-Origin", "*");
-#endif
+        
     }
 
     // Use this for initialization
@@ -62,7 +55,7 @@ public class SpatialImageSearch : MonoBehaviour {
             idx = src.IndexOf("\"");
             src = src.Substring(0, idx);
 
-            WWW img = new WWW(src, null, headers);
+            WWW img = new WWW(src);
 
             yield return img;
 
